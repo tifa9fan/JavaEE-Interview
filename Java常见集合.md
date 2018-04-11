@@ -221,3 +221,58 @@ e.next = newTable[i] 导致  key(3).next 指向了 key(7)
 [《疫苗：JAVA HASHMAP的死循环》](https://coolshell.cn/articles/9606.html)  
 [《HashMap在并发下可能出现的问题分析》](https://yq.aliyun.com/articles/38431)  
 [《深入理解JAVA集合系列三：HashMap的死循环解读》](https://www.cnblogs.com/dongguacai/p/5599100.html)
+
+**11. HashMap出现Hash DOS攻击的问题**
+
+2012年底，出现了新的DoS攻击方式：Hash Collision Dos（Hash碰撞的拒绝式服务攻击）。攻击者利用了各语言的Hash算法的“非随机性”可以制造出N多的value不同但key的hash值相同的数据，让哈希表成为一张单向链表，从而导致整个网站或是程序的运行性能以级数下降。（会很容易导致服务器的CPU提升至100%）  
+这个问题早在2003年就在论文《通过算法复杂性进行拒绝式服务攻击》中被爆出了，但没有引起相关的注意，尤其是Java语言。  
+
+当Hash碰撞发生的足够多时，导致hash表变成了单向连接，本来的O(1)的搜索算法复杂度就变成了O(n)，而插入N个数据的算法复杂度就变成了O(n^2)。
+
+解决办法：
+- 更改hash算法；
+- 限制post的参数个数，限制post的请求长度。
+- 最好附加防火墙检测异常的请求。
+
+对于Java而言，Hash函数是对DJBX33A的改造（使用的31而不是33，另外初始值为0而不是5381），但仍然可以使用相等子串法来获取该Hash函数的碰撞。Tomcat等web服务器在处理用户提交的参数时，直接把参数得到键值对放入了HashMap中，Tomcat的补丁限制用户提交的参数个数，在补丁后的版本Tomcat 6.0.35，再次提交攻击POC，已经没有任何影响。  
+而JsonObject在解析json字符串时，使用了HashMap存储，所以也会被漏洞所影响。而主流的第三方json解析框架，大都使用了HashMap。
+
+实际上Java在某次更新中，已经修复了此类漏洞。
+
+参考：  
+[《邪恶的JAVA HASH DOS攻击》](http://www.freebuf.com/articles/web/14199.html)  
+[《Hash碰撞与拒绝服务攻击》](https://www.cnblogs.com/xuanhun/archive/2012/01/01/2309571.html)  
+[《Hash碰撞的拒绝式服务攻击》](https://blog.csdn.net/yatere/article/details/7183232)
+
+**12. ConcurrentHashMap 的工作原理及代码实现，如何统计所有的元素个数**
+
+ConcurrentHashMap是由Segment数组结构和HashEntry数组结构组成。Segment是一种可重入锁ReentrantLock，早ConcurrentHashMap中扮演锁的角色，HashEntry则用于存储键值对数据。  
+一个ConcurrentHashMap里包含一个Segment数组，Segment的结构与HashMap类似，是一种数组和链表结构。一个Segment里包含一个HashEntry数组，每个HashEntry是一个链表结构的元素，每个Segment守护着一个HashEntry数组里的元素，当对此HashEntry数组的数据进行修改时，必须先获得它对应的Segment的锁。
+
+从JDK1.7开始，ConcurrentHashMap不再采用Segment实现，而是改用了Node。Node是一个链表的结构，每个节点可以引用到下一个节点。
+- Node类  
+这是最核心的内部类，包装了key-value键值对，所有插入ConcurrentHashMap的数据都包装在这里面。  
+它与HashMap中的定义很相似，但它对value和next顺序性设置了volatile同步锁，不允许调用setValue方法直接改变Node的value域，增加了find方法辅助map.get()方法。
+- TreeNode类  
+树节点类，另一个核心的数据结构。当链表长度过长的时候，会转换为TreeNode。但是与HashMap不同的是，它并不是直接转换为红黑树，而是把这些节点包装成TreeNode放在TreeBin对象中，由TreeBin完成对红黑树的包装。而且TreeNode在ConcurrentHashMap继承自Node类，而并非HashMap中的继承自LinkedHashMap.Entry。
+- ForwardingNode  
+一个用于连接两个table的节点类。包含一个nextTable指针，用于指向下一张表。而这个节点的key value next指针全部为null，hash值为-1.这里面定义的find方法是从nextTabe里进行查询节点，而不是以自身为头节点进行查找。
+
+如果要统计整个ConcurrentHashMap里元素的多少，最安全点的做法是统计size时把所有Segment的put，remove和clean方法全部锁住，但这是非常低效的。因为在累加count的操作过程中，之前累加过的count发生编发的几率很小，所以ConcurrentHashMap的做法是先尝试2次通过不锁住Segment的方式来统计各个Segment的个数，如果统计过程中，容器的count方发生了变化，再采用加锁的方式来统计所有Segment中元素的个数。  
+也就是说，ConcurrentHashMap会在统计size时使用modCount变量，在put，remove和clean方法里操作元素前都会将变量modCount进行加一，如果modCount在统计size前后发生了变化，则容器的大小必定发生了改变。ConcurrentHashMap会尝试两次不加锁的size操作，如果两次的modCount都发生了改变，再通过加锁的方式来统计所有Segment中元素的个数。
+
+参考：  
+[《ConcurrentHashMap的实现原理和源码分析》](https://blog.csdn.net/u013991521/article/details/53032216)  
+[《从ConcurrentHashMap的size操作来看并发编程的技巧》](https://blog.csdn.net/qian_348840260/article/details/47105575)
+
+**13. 手写简单的HashMap**
+
+个人感觉难点在于：  
+Entry的声明和使用  
+如何进行rehash  
+put()方法的hash算法。
+
+**14. 看过哪些Java集合类的源码**
+
+参考：  
+[《Java集合源码剖析》](https://blog.csdn.net/column/details/collection.html)
