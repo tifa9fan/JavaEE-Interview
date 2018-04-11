@@ -1,5 +1,5 @@
 # JavaEE
-JavaEE study notes &amp; case study
+JavaEE相关面试题总结
 
 ### 面试题题目相关
 
