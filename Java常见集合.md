@@ -104,4 +104,120 @@ ArrayList想要在指定位置插入或删除元素时，只要的耗时在Syste
 
 **5. ArrayList 与 Vector 区别**
 
+ArrayList和Vector都继承了相同的父类和实现了相同的接口；  
+底层都是数组实现的；  
+初始默认长度都为10。  
+
+它俩的不同点在于：
+- Vector中的public方法多数添加了synchronized关键字，以确保方法同步，而ArrayList中并没有；所以Vector线程安全，ArrayList线程不安全。
+- 两者的扩容不同。ArrayList有两个属性：存储数据的数组elementData，和存储记录数目的size；而Vector有三个属性：存储数据的数组elementData，存储记录数目的elementCount，还有扩展数组大小的扩展因子capacityIncrement。导致二者扩容方式不同：虽说都采用的是线性连续存储空间，当存储空间不足时，ArrayList默认增加为原来的50%，Vector默认增加为原来的一倍。
+
+参考：  
+[《ArrayList和Vector的区别》](https://segmentfault.com/a/1190000007335150)
+
 **6. HashMap 和 Hashtable 的区别**
+
+HashMap和HashTable都实现了Map接口，它们的区别主要在于：线程安全性，同步，以及速度。
+- HashMap几乎可以等价于HashTable，但HashMap是线程不安全的，且可以接受null作为一个键或多个值，而HashTable不论键值都不允许null。
+- HashMap是线程不安全的，但HashTable是线程安全的，如果没有正确的同步机制的话，多个线程是不能共享HashMap的。而JDK1.5则提供了ConcurrentHashMap，作为HashMap的替代，而且比HashTable的扩展性更好。
+- 另一个区别则在于迭代器。HashMap提供了快速失败机制的Iterator迭代器；而HashTable的enumerator迭代器不是基于快速失败机制的。所以HashMap不能再多线程下发生并发修改（迭代过程中被修改），但使用迭代器本身的remove()方法则不会抛出异常。
+- HashTable是线程安全的，所以在单线程环境下它比HashMap要慢。如果不是多线程的情况下，HashMap的性能要好过HashTable。
+
+HashMap可以通过工具类Collections实现同步：
+``` java
+Map m = Collections.synchronizeMap(hashMap);
+```
+
+参考：  
+[《HashMap和Hashtable的区别》](http://www.importnew.com/7010.html)
+
+**7. HashSet 和 HashMap 区别**
+
+7.1 HashSet  
+HashSet实现了Set接口，它仅仅存储对象。  
+通过add()方法将元素放入Set中，使用成员对象来计算hashCode值，对于两个对象来说hashCode可能相同，这时通过equals()方法来判断对象的相等性，如果两个对象不同的话，则返回false。  
+HashSet底层是通过HashMap来实现的，较直接使用HashMap，HashSet较慢。  
+HasheSet内部使用HashMap，它将元素存储为键和值（把存储的值作为key）
+
+7.2 HashMap  
+HashMap实现了Map接口，存储的是键值对。  
+通过put()方法将元素放入map中，使用键对象来计算hashCode值。  
+HashMap比较快，因为是使用唯一的键来获取对象。  
+HashMap使用后台数组（backing array）作为桶，并使用链表（LinkedList）存储键/值对。
+
+参考：  
+[《图解HashMap和HashSet的内部工作机制》](http://www.importnew.com/21841.html)  
+[《HashMap和HashSet的区别》](http://www.importnew.com/6931.html)
+
+**8. HashMap 和 ConcurrentHashMap 的区别**
+
+HashMap本质是数组加链表。根据Key取得hash值，然后计算出数组的下标；如果多个key对应到同一个下标，就用链表串起来，新插入的在前面。  
+ConcurrentHashMap是在HashMap的基础上，将数据分为多个segment（默认为16个），然后每次操作对一个segment加锁，避免多线程锁的几率，从而提高并发效率。
+
+查看ConcurrentHashMap源码，它引入了一个分段锁的概念，具体可以理解为把一个大的Map拆分成了N个小的HashTable，根据key.hashCode()来决定把key放到哪个HashTable中。  
+在ConcurrentHashMap中，就是把Map分成了N个segment。在put和get的时候，都是先根据key.hashCode()算出放在哪个segment。   
+
+ConcurrentHashMap和HashTable主要区别就是围绕着锁的粒度以及如何锁。ConcurrentHashMap是一个分段的HashTable，根据自定的hashCode()算法生成的对象来获取对应的hashCoide的分段块进行加锁，而不是采用整体加锁，提高了效率。
+
+[《HashMap与ConcurrentHashMap的区别》](https://www.cnblogs.com/signheart/p/21d463eebb54f3e9139da3d43ee7bfda.html)  
+[《HashMap和ConcurrentHashMap的区别，HashMap的底层源码。》](https://www.cnblogs.com/remember-forget/p/6021644.html)
+
+**9. HashMap 的工作原理及代码实现，什么时候用到红黑树**
+
+在JDK1.6中，HashMap采用位桶+链表实现，即使用链表来处理hash冲撞，同一hash值得链表都存储在一个链表里。但是当位于一个桶中的元素较多（即hash值相等的元素较多时），通过key值依次查找的效率会变得非常低下（链表只能通过遍历来获取需要的数据）。  
+针对这种情况，在JDK1.8中，HashMap采用位桶+链表+红黑树实现。当链表传唱度超过阈值（8）时，将链表转换成红黑树，这样可以大大减少查找时间。
+
+HashMap的实现原理：
+- HashMap基于hashing原理，通过put()和get()方法存储和获取对象。当将键值对传递给put()方法时，将调用相应对象的hashCode()方法来计算hashCode，然后根据hashCode来找到桶的相应位置来存储值对象。当获取对象时，通过键对象的equals()方法找到正确的键值对，然后返回值对象。  
+- 当发生哈希碰撞时，HashMap使用LinkedList来解决碰撞问题——对象将被存储在LinkedList的一个节点中。即当两个不同键对象的hashCode相同时，它们会被存储在同一个桶位置的LinkedList中。
+- 在JDK1.8中，如果一个位桶中的元素个数超过TREEIFY_THRESHOLD（默认为8）时，就使用红黑树替换链表，从而提高速度。这个替换的方法被称为树形化（treeifyBin）
+
+总之，JDK1.8之后哈希表的添加，查找，删除，扩容方法都增加了一种节点为TreeNode的情况。
+- 添加时，当桶中链表个数超过8时会转换成红黑树。
+- 删除，扩容时，如果桶中结构为红黑树，并且树中元素个数太少的话，会进行修剪或者直接直接还原成链表结构。
+- 查找时即使哈希函数不优导致大量元素集中在一个桶中，由于有红黑树结构，性能也不会降低。
+
+参考：  
+[《Java 集合深入理解（17）：HashMap 在 JDK 1.8 后新增的红黑树结构》](https://blog.csdn.net/u011240877/article/details/53358305)  
+[《HashMap底层实现原理》](https://blog.csdn.net/yinbingqiu/article/details/60965080)
+
+**10. 多线程情况下HashMap死循环的问题**
+
+HashMap采用数组链表来解决Hash冲突，因为是链表结构，就可能形成闭合的链路。  
+在单线程情况下，只有一个线程对HashMap的数据结构进行操作，是不可能产生闭合的回路的。  
+只有在多线程并发的情况下才会出现这种情况，那就是在执行put()操作时，如果size> initialCapacity*loadFactor，这时候HashMap就会进行ReHash操作，随之HashMap的结构就会发生变化。而如果多于一个线程同时出发了ReHash操作，就可能产生闭合的回路。  
+在ReHash中，最关键的一步操作是transfer(ENtry[] newTable)，这个操作会把当前ENtry[] table数组的全部元素转移到新的table中。而这个transfer的过程在并发环境下会发生错误，导致数组链表中的链表形成循环链表，在后面的get操作时e = e.next操作无限循环，具体表现为CPU使用率100%。
+
+``` java
+void transfer(Entry[] newTable) {
+        Entry[] src = table;
+        int newCapacity = newTable.length;
+        for (int j = 0; j < src.length; j++) {
+            Entry<K,V> e = src[j];
+            if (e != null) {
+                src[j] = null;
+                do {
+                    Entry<K,V> next = e.next;//假设第一个线程执行到这里因为某种原因挂起
+                    int i = indexFor(e.hash, newCapacity);
+                    e.next = newTable[i];
+                    newTable[i] = e;
+                    e = next;
+                } while (e != null);
+            }
+        }
+    }
+```
+当线程1执行到注释点被挂起后，线程二执行完毕了ReHash；  
+线程一被调度回来执行。
+
+先是执行 newTalbe[i] = e;
+然后是e = next，导致了e指向了key(7)，
+而下一次循环的next = e.next导致了next指向了key(3)
+把key(7)摘下来，放到newTable[i]的第一个，然后把e和next往下移。  
+e.next = newTable[i] 导致  key(3).next 指向了 key(7)
+注意：此时的key(7).next 已经指向了key(3)， 环形链表就这样出现了。
+
+参考：  
+[《疫苗：JAVA HASHMAP的死循环》](https://coolshell.cn/articles/9606.html)  
+[《HashMap在并发下可能出现的问题分析》](https://yq.aliyun.com/articles/38431)  
+[《深入理解JAVA集合系列三：HashMap的死循环解读》](https://www.cnblogs.com/dongguacai/p/5599100.html)
