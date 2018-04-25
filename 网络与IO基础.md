@@ -74,3 +74,77 @@ HTTP/2 通过让所有数据流共用同一个连接，可以更有效地使用 
 参考：
 [《让面试官颤抖，HTTP2.0协议之你应该要准备的面试题》](https://mp.weixin.qq.com/s?__biz=MzI1NDQ3MjQxNA==&mid=2247484611&idx=1&sn=66c875392eedff8150633ddcd5d83e7a&chksm=e9c5fd72deb274648a607b9bc39bac34adadd768577b77354f6dc85422691605e210b69eeb7b&scene=21#wechat_redirect)  
 [《HTTP/2.0 相比1.0有哪些重大改进？》](https://blog.csdn.net/u011904605/article/details/53025802)
+
+
+**4. Https的基本概念**
+
+Https是基于安全套接字层的超文本传输协议 Http Over SSL，是一个Netscape开发的Web协议。  
+HTTPS = HTTP + SSL  
+Https在Http应用层的基础上使用安全套接字层作为子层。
+
+Http是一个用来通过互联网传输和接收信息的协议。Http使用请求/响应的郭晨，因此信息可以在服务器间快速，轻松而且精确的进行传输。但Http是不安全的，所以就出现了Https。
+
+Http和Https在大多数情况下都是相同的，唯一不同的只是一个协议头https的说明，其他都是一样的。
+- Http的url以http://开头，而Https的url以https://开头
+- Http是不安全的，而Https是安全的
+- Http标准端口是80，而Https的标准端口是443
+- 在OSI网络模型中，Http工作于应用层，而Https工作在传输层
+- Http无需加密，而Https对传输的数据进行加密
+- Http无需整数，而Https需要认证证书
+
+使用Https连接时，服务器要求有公钥和签名的证书。当使用https连接，服务器响应初始连接，并提供它所支持的加密方法。作为回应，客户端选择一个连接方法，并且服务器端与客户端交换证书验证彼此身份。完成之后，在确保使用相同密钥的情况下传输加密信息，然后关闭连接。
+
+Http包含如下动作：
+- 浏览器打开一个TCP连接
+- 浏览器发送http请求到服务器端
+- 服务器发送http回应信息到浏览器
+- TCP连接关闭
+
+SSL包含如下动作：
+- 验证服务器端
+- 允许客户端和服务器端选择加密算法和密码，确保双方都支持
+- 验证客户端（可选）
+- 使用公钥加密技术来生成共享加密数据
+- 创建一个加密的SSL连接
+- 基于该SSL连接传递Http请求
+
+参考：  
+[《HTTPS的基本概念》](https://blog.csdn.net/xhbxhbsq/article/details/79385179)
+
+**5. 三次握手和四次挥手、为什么挥手需要四次**
+
+三次握手过程：
+- a --> b  
+B确认A发送功能正常，B确认B的接收功能正常
+- b --> a  
+A确认A发送和接收功能正常，A确认B发送和接收功能正常
+- a --> b  
+B确认A发送和接收功能正常，B确认A发送和接收功能正常。
+
+三次握手是为了防止服务器收到已失效的连接请求报文段，以防服务器造成不必要的资源浪费。
+
+四次挥手：  
+TCP连接是全双工的，因此每个方向都必须单独进行关闭。这原则是当一方完成它的数据发送任务后就能发送一个FIN来终止这个方向的连接。收到一个FIN只意味着这一方向上没有数据流动，一个TCP连接在收到一个FIN后仍能发送数据。首先进行关闭的一方将执行主动关闭，而另一方执行被动关闭。
+- TCP客户端发送一个FIN，用来关闭客户到服务器的数据传送。
+- 服务器收到这个FIN，它发回一个ACK，确认序号为收到的序号加1，和SYN一样，一个FIN占用一个序号。
+- 服务器完成可能的剩余数据发送后，关闭客户端的连接，发送一个FIN给客户端。
+- 客户端发回ACK报文确认，并将确认序号置为收到序号加1。
+
+之所以挥手需要四次是因为服务端的LISTEN状态下的SOCKET当收到SYN报文的建连请求后，它可以把ACK和SYN（ACK起应答作用，而SYN起同步作用）放在一个报文里来发送。但关闭连接时，当收到对方的FIN报文通知时，它仅仅表示对方没有数据发送给你了；但未必你所有的数据都全部发送给对方了，所以你可以未必会马上会关闭SOCKET,也即你可能还需要发送一些数据给对方之后，再发送FIN报文给对方来表示你同意现在可以关闭连接了，所以它这里的ACK报文和FIN报文多数情况下都是分开发送的。
+
+参考：  
+[《 理论经典：TCP协议的3次握手与4次挥手过程详解》](https://blog.csdn.net/omnispace/article/details/52701752)  
+[《HTTPS 工作原理和 TCP 握手机制》](https://mp.weixin.qq.com/s/teTtnVqJeIvl3bVjXmCWKA)  
+[《TCP四次挥手(图解)-为何要四次挥手》](https://blog.csdn.net/daguairen/article/details/52673194)
+
+**6. 从浏览器中输入URL到页面加载的发生了什么？**
+
+- dns解析  
+- tcp连接
+- 发送http请求
+- 服务器处理请求并返回http报文
+- 浏览器解析渲染页面
+- 连接结束
+
+参考：  
+[《从输入URL到页面加载发生了什么》](https://mp.weixin.qq.com/s?__biz=MzI1NDQ3MjQxNA==&mid=2247483724&idx=1&sn=e58dd30d124971c795584e8673d6cc71&chksm=e9c5f8fddeb271ebebbb6c350ed1abc252f1f26b4f35c4ce36e10bde9659a37520feabed2290&scene=21#wechat_redirect)
