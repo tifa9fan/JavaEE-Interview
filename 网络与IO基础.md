@@ -75,7 +75,6 @@ HTTP/2 通过让所有数据流共用同一个连接，可以更有效地使用 
 [《让面试官颤抖，HTTP2.0协议之你应该要准备的面试题》](https://mp.weixin.qq.com/s?__biz=MzI1NDQ3MjQxNA==&mid=2247484611&idx=1&sn=66c875392eedff8150633ddcd5d83e7a&chksm=e9c5fd72deb274648a607b9bc39bac34adadd768577b77354f6dc85422691605e210b69eeb7b&scene=21#wechat_redirect)  
 [《HTTP/2.0 相比1.0有哪些重大改进？》](https://blog.csdn.net/u011904605/article/details/53025802)
 
-
 **4. Https的基本概念**
 
 Https是基于安全套接字层的超文本传输协议 Http Over SSL，是一个Netscape开发的Web协议。  
