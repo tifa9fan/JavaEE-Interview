@@ -44,3 +44,92 @@ servlet一旦终止，servlet实例即可被垃圾回收，处于卸载状态。
 
 参考：  
 [《HTTP中的重定向和请求转发的区别》](https://blog.csdn.net/meiyalei/article/details/2129120)
+
+**3. BeanFactory 和 ApplicationContext 有什么区别**
+
+BeanFactory与ApplicationContext都是通过加载xml配置文件的方式加载bean。而后者是前者的扩展，ApplicationContext由BeanFactory派生而来，因此提供BeanFactory所有的功能。ApplicationContext以一种更面向框架的工作方式以及对上下文进行分层和实现继承。  
+在绝大多数的“典型的”企业应用和系统，ApplicationContext都优先于BeanFactory。  
+
+它们最大的不同就在于BeanFactory是延迟加载。如果一个bean当中存在属性没有加载，会在第一次调用getBean()方法的时候报错，而ApplicationContext会在读取xml文件后，如果配置文件没有错误，就会将所有的Bean加载到内存中。缺点就是在Bean较多的时候回占用很大的内存，程序启动较慢。但使得我们可以在容器启动时就发现Spring中存在的配置错误。
+
+具体不同分析如下：  
+1. 利用MessageSource的国际化  
+BeanFactory没有扩展Spring中MessageResource接口。但ApplicationContext扩展了，因此具有消息处理的能力（i18N）。
+2. 事件机制Event  
+ApplicationContext的事件机制主要通过applicationEvent和ApplicationListener两个接口提供。当ApplicationContext中发布一个事件时，所有扩展了ApplicationListener的Bean都将接收到这个事件，从而进行相应的处理。
+3. 底层资源的访问  
+ApplicationContext扩展了ResourceLoader资源加载器接口。从而可以用来加载多个Resource。而BeanFactory是没有扩展ResourceLoader的。
+4. 对web应用的支持  
+与BeanFactory通常以编程的方式被创建不同的是，ApplicationContext能以声明的方式创建。
+
+参考：  
+[《Spring中ApplicationContext和beanfactory区别》](https://blog.csdn.net/hi_kevin/article/details/7325554)  
+[《创建ApplicationContext与BeanFactory时的区别-Spring源码学习之容器的基本实现》](https://www.cnblogs.com/yuanmiemie/p/6812163.html)
+
+**4. Spring Bean 的生命周期**
+
+Spring框架中，一旦把一个Bean纳入Spring IOC容器之中，这个Bean的生命周期就会交由容器进行管理。一般当当管理角色的是BeanFactory或者ApplicationContext。  
+以BeanFactory为例，说明Bean的生命周期：  
+1. Bean的建立  
+由BeanFactory读取Bean定义文件，并生成各个实例。
+2. setter注入  
+执行bean的属性依赖注入
+3. BeanNameAware的setBeanName()  
+如果实现了该接口，则执行此方法。
+4. BeanFactoryAware的setBeanFactory()  
+如果实现该接口，则执行此方法。
+5. BeanPostProcessor的processBeforeInitialization()  
+如果有关联的processor，则在Bean初始化之前都会执行这个实例的processBeforeInitialization()方法。
+6. InitializingBean的afterPropertiesSet()  
+如果实现了该接口，则执行此方法。
+7. Bean定义文件中配置的init-method  
+如果在bean中配置了自定义的init方法，则执行
+8. BeanPostProcessors的processAfterInitialization()  
+如果有关联的processor，则在Bean初始化之前都会执行这个实例的此方法。
+9. DisposableBean的destroy()  
+在容器关闭时，如果Bean实现了该接口，则执行此方法。
+10. Bean定义文件中配置的destroy-method   
+在容器关闭时，如果有在bean中配置自定义的destroy()方法，则会执行。
+
+参考：  
+[《Spring Bean的生命周期》](https://www.cnblogs.com/redcool/p/6397398.html)   
+这里的流程可能不全，因为之前有手写过测试bean的流程代码，我记得是十几个步骤，之后如果能找到源码或者有时间重新测试，我会修改此题答案。
+
+**5. Spring IOC 如何实现**
+
+控制反转IOC inversion of control是一种设计思想。依赖注入DI dependency injection是实现IOC的一种方法。  
+IOC是Spring的核心。所谓的控制反转，就是获得依赖对象的方式反转了。对于Spring来说，就是有Spring阿里负责空值对象的生命周期和对象间的关系。所有的类都在Spring容器中登记，告诉Spring自己是什么，自己需要什么。所有的类的创建，销毁都由Spring来控制。也就是说**控制对象生存周期的不再是引用它的对象，而是Spring**。对于某个具体的对象而言，以前是它控制其他对象，而现在是**所有对象都被Spring控制**，所以称为控制反转。
+
+IOC地实现看起来高深莫测，实际上抽丝剥茧直达底层就会发现，其实IOC是建立在一些基础技术之上。IOC的实现建立在工厂模式，java反射机制和jdk的操作xml的DOM解析方式（当使用xml配置时）。甚至我们在某种程度上可以认为IOC就是一个存储了键值对的Map集合，里面存储的是beanId与实例的对应关系。  
+首先Spring通过解析xml配置或者通过反射获取annotation注解来确立beanId与其对应的类的映射关系，然后通过工厂模式创建对应的实例。之后利用反射机制实行依赖注入。这就是IOC的灵魂。
+
+参考：  
+[《Spring如何实现IOC和AOP的，说出实现原理。》](https://www.cnblogs.com/dangjunhui/p/5473800.html)  
+[《》spring ioc原理（看完后大家可以自己写一个spring）] (https://blog.csdn.net/a__yes/article/details/52201335)
+
+**6. Spring中Bean的作用域，默认的是哪一个**
+
+1. 单例Singleton（Spring默认作用域）  
+Spring最初只有这个作用域。整个应用中只会创建一个实例，符合单例模式。
+2. 原型Prototype  
+每次调用都会创建一个新的实例。
+
+在web使用的时候还有额外三个作用域。但必须在web.xml中注册一个RequestContextListener。目的是为了设置每次请求开始和结束都可以使Spring得到相应的事件。
+
+3. 会话Session  
+每个用户session可以产生一个新的bean，不同用户之间的bean互相不影响。
+4. 请求Request  
+为每个请求创建一个实例
+5. globalSession  
+作用和session雷士，只是使用portlet的时候使用。
+
+参考：  
+[《spring bean的四种常用作用域的测试》](http://gaddma.iteye.com/blog/2037038)
+
+**7. 说说 Spring AOP、Spring AOP 实现原理**
+
+**8. 动态代理（CGLib 与 JDK）、优缺点、性能对比、如何选择**
+
+**9. Spring 事务实现方式、事务的传播机制、默认的事务类别**
+
+**10. Spring 事务底层原理**
