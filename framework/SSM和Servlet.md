@@ -130,12 +130,12 @@ Spring最初只有这个作用域。整个应用中只会创建一个实例，�
 
 AOP面向切面编程 Aspect Oriented Programming是通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是OOP的延续，是软件开发中的一个热点，也是Spring框架中的一个重要内容，是函数式编程的一种衍生泛型。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提供程序的可用性，同时提高了开发的效率。  
 OOP引入了封装，继承和多态性等概念来建立一种对象层次结构，用以模拟公共行为的一个集合。当需要为分散的对象引入公共行为的时候，OOP则显得无力。OOP允许定义从上到下的关系，但不并适合定义从左到右的关系。部分例如日志功能的代码往往水平范散在所有对象层次中，而与它所散布到的对象的核心功能毫无关系。这种散布在各处的无关代码被称为横切（cross-cutting）代码。在OOP设计中，它导致了大量代码的重复，不利于各个模块的重用。而且我们无法通过抽象父类的方式消除重复性横切代码，因为这些横切逻辑依附在业务类方法的流程中，他们不能转移到其他地方去。  
-对此，出现了AOP技术来解决难题。AOP利用一种称为横切的技术，解剖开封装的对象内部，并将那些影响了多个累的公共行为封装到一个可重用模块，并将其命名为切面 Aspect。AOP将那些与业务无关，却为业务模块所共同调用的逻辑或责任封装起来，便于减少系统的重复代码，降低模块间的耦合度，兵力与未来的可操作性和可维护性。AOP的核心思想就是讲应用程序中的商业逻辑同对其提供支持的通用服务进行分离。  
+对此，出现了AOP技术来解决难题。AOP利用一种称为横切的技术，解剖开封装的对象内部，并将那些影响了多个类的公共行为封装到一个可重用模块，并将其命名为切面 Aspect。AOP将那些与业务无关，却为业务模块所共同调用的逻辑或责任封装起来，便于减少系统的重复代码，降低模块间的耦合度，并利于未来的可操作性和可维护性。AOP的核心思想就是讲应用程序中的商业逻辑同对其提供支持的通用服务进行分离。  
 
 AOP的实现主要分为两大类，可以采用动态代理技术，利用截取消息的方式，对该消息进行装饰，以取代原有对象行为的执行。也可以选择采用静态织入的方式，引入特定的语法创建切面，从而使得编译器可以在编译期间织入有关切面的代码。  
 Spring采用了第二代AOP技术，采用动态代理机制和字节码生成技术实现。而第一代AOP例如AspectJ则是采用编译器将横切逻辑织入目标对象。  
 
-Spring的AOP实现由两种方法，一是通过JDK自带的动态代理来完成代理类的动态创建。二室通过开源项目CGLIB来生成动态代理类。二者区别如下：  
+Spring的AOP实现由两种方法，一是通过JDK自带的动态代理来完成代理类的动态创建。二是通过开源项目CGLIB来生成动态代理类。二者区别如下：  
 1. 动态代理的机制实现由lang.reflect.Proxy类和lang,reflect.InvocationHandler接口完成，代理类与被代理类共同继承了相同的接口，他们彼此间是兄弟关系。而CGLIB扩展对象的原理是对目标对象进行了继承，为其生成相应的子类，而子类可以通过重写来扩展父类的行为。因此只需要将横切逻辑的实现放到子类中，然后让系统使用扩展后的目标对象的子类，就可以达到与代理模式相同的效果了。被代理类与代理类是父子关系。
 2. JDK的动态代理只能对实现了相应Interface的类使用。如果这个类没有实现任何的Interface，就无法使用动态代理对其产生相应的代理对象。而相较于动态代理，由于采用了继承来实现，因此CGLIB可以为没有实现任何接口的类进行扩展。但请注意CGLIB也有限制，就是无法对final方法进行重写。
 3. 在默认情况下，如果Spring AOP发现目标实现了相应的Interface，则采用JDK动态代理为其生成代理对象实例。而如果目标对象没有实现任何的Interface，Spring AOP会尝试使用CGLIB动态字节码生成库，为目标对象生成代理对象。
@@ -151,4 +151,141 @@ Spring的AOP实现由两种方法，一是通过JDK自带的动态代理来完�
 
 **9. Spring 事务实现方式、事务的传播机制、默认的事务类别**
 
+Spring事务的事务实现分为两类四种：  
+1. 编程式事务管理：  
+需要手动编写代码，在实际开发中很少使用
+2. 声明式事务管理   
+2.1 基于TransactionProxyFactoryBean的方式，需要为每个进行事务管理的类做相应配置  
+2.2 基于AspectJ的XML方式，不需要改动类，在XML文件中配置好即可  
+2.3 基于注解的方式，配置简单，只需要在业务层类中添加注解。
+
+Spring在TransactionDefinition接口中规定了七种类型的事务传播行为。它们规定了事务方法和事务方法发生嵌套调用时事务如何进行传播。它用于协调已经有事务标识大的方法之间发生调用时的事务上下文的规制（是否要有队里的事隔离级别和锁）
+1. PROPAGATION_REQUIRED  
+如果没有当前事务，就新建一个事务。如果已经存在一个事务中，加入到这个事务中。这是最常见的选择。
+2. PROPAGATION_SUPPORTS  
+支持当前事务，如果当前没有事务，就以非事务方式执行。
+3. PROPAGATION_MANDATORY  
+使用当前的事务，如果当前没有事务，就抛出异常。当业务方法被设置为PROPAGATION_MANDATORY时，它不能被非事务的业务方法调用。所以PROPAGATION_MANDATORY的放水阀一般都是被其他业务方法简洁点用的。
+4. PROPAGATION_REQUIRES_NEW  
+新建事务，这是一个新的，与外层事务无关的内部事务，该事务拥有自己的独立隔离级别和锁，不依赖于外部事物，独立提交和回滚。如果当前存在事务，就把当前事务挂起。内部事务结束时，外部事务才继续执行。
+5. PROPAGATION_NOT_SUPPORTED  
+以非事务方式执行操作。当前如果存在事务，就把当前事务挂起。  
+此传播机制使外层业务方法的事务被挂起，当内部方法执行完成后，外层方法的事务重新运行，如果外层方法没有事务，直接运行，不需要做任何其他事。
+6. PROPAGATION_NEVER  
+以非事务方式执行。如果当前存在事务，则抛出异常。当业务方法被设置为此传播机制时，它不能被拥有事务的其他业务方法调用。
+7. PROPAGATION_NESTED  
+如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行与PROPAGATION_REQUIRED类似的操作。它创建的新事务是依赖于外层事务的子事务。当外层事务提交或回滚时，子事务也会连带提交和回滚。
+
+注意：当使用PROPAGATION_NESTED时，底层的数据源必须基于JDBC 3.0，并且实现者需要支持保存点事务机制。
+
+这里我不清楚题目要求的默认事务类型指的是什么。具体而言，事务传播级别默认为REQUIRED，事务隔离级别采用底层数据库的默认隔离级别（MySQL为可重复读，Orcale，SQLServer默认为提交读），事物的超时秒数默认为-1，永不超时。是否为只读事务默认为false，表示可读写事务。
+
+参考：  
+[《Spring配置事务中@Transactional各个属性定义》](https://blog.csdn.net/mawming/article/details/52277431)  
+[《Spring五个事务隔离级别和七个事务传播行为》](https://yq.aliyun.com/articles/48893)  
+[《Spring事务传播机制》](https://www.cnblogs.com/softidea/p/5962612.html)
+
 **10. Spring 事务底层原理**
+
+10.1 编程式事务管理底层原理   
+TransactionTemplate是编程式事务管理的入口。它提供了唯一的编程入口execute，接收用于封装业务逻辑的TransactionCallback接口的实例，返回用户自定义的事务操作结果。  
+先判断transactionManager是否是接口CallbackPreferringPlatformTransactionManager的实例。如果是则直接委托给该接口的execute方法进行事务管理。否则就教给核心成员PlatformTransactionManager进行实物的创建，提交或回滚操作。  
+CallbackPreferringPlatformTransactionManager接口扩展自PlatformTransactionManager，该接口相当于是把事物的创建，提交和回滚都封装了。用户只需要传入TransactionCallback接口实例即可，而不是像使用PlatformTransactionManager接口那样，还需要用户自己显式调用getTransaction,rollback或commit进行事务管理。
+
+10.2 声明式事务管理底层原理  
+声明式事务管理的核心就是利用AOP技术，将食物逻辑作为环绕增强MethodInterceptor动态织入目标业务方法中。其中核心类为TransactionInterceptor。它实现了MethodInterceptor接口，将食物管理的逻辑封装在环绕增强的实现中，而业务代码则抽象为MethodInvocation（该接口扩展自Joinpoint，实际是AOP中的连接点），使得事务管理代码与业务逻辑代码完全分离，可以对任意目标类进行无侵入性的事务织入。  
+先根据MethodInvocation获取事务属性TransactionAttribute，根据其得到对应的PlatformTransactionManager，再根据其是否是CallbackPreferringPlatformTransactionManager的实例分别作不同的处理。
+
+参考：  
+[《Java互联网架构-深度解读底层原理Spring事务管理分析》](https://baijiahao.baidu.com/s?id=1586726317037183459&wfr=spider&for=pc)
+
+**11. Spring事务失效（事务嵌套），JDK动态代理给Spring事务埋下的坑**
+
+事务失效的具体情境请操作参考资料。  
+
+JDK动态代理中，只有代理对象proxy直接调用的方法才真正走的是代理。而如果这个方法内部调用了其他方法，调用的其他方法无论潜逃了多少层都是不会走代理的。  
+如果没有注意到这个特点，在spring的事务嵌套中，如果传播方式为PROPAGATION_REQUIRES_NEW，而子事务抛出异常，父事务未捕获则两个都会失败，如果捕获则两个一起成功，这就与逻辑不符了。
+
+解决方法：  
+1. 通过AopProxy上下文暴露代理对象。配置XML为<aop:aspectj-autoproxy expose-proxy="true"/>
+2. 通过ApplicationContext上下文进行解决
+
+[《面试必备技能：JDK动态代理给Spring事务埋下的坑》](https://mp.weixin.qq.com/s?__biz=MzI1NDQ3MjQxNA==&mid=2247484940&idx=1&sn=0a0a7198e96f57d610d3421b19573002&chksm=e9c5ffbddeb276ab64ff3b3efde003193902c69acda797fdc04124f6c2a786255d58817b5a5c&scene=21#wechat_redirect)
+
+**12. 如何自定义注解实现功能**
+
+1. 使用@interface自定义一个注解，请注意定义注解时不能继承其他的注解或接口  
+2. 使用@Target注解表示该注解可以用于什么地方
+3. 使用Retention注解表示需要在什么级别来保存该注解信息。默认为class：即注解在class文件中可用，但会被JVM丢弃，可选source（注解将被编译器丢弃）和Runtime（JVM将在运行期间保留注解。如果需要通过反射获取注解，必须为此级别）
+4. 使用@Inherited来表示允许子类继承父类中的注解。
+5. 在注解中可以定义属性，可以通过default关键字来设置该属性默认值。
+6. 在运行中注解只能通过反射获得，通过反射isAnnotationPresent()或getAnnotations()等方法来获取注解，之后可以依据注解是否存在和属性的值来做进一步自定义处理。
+
+**13. Spring MVC 运行流程**
+
+在整个SpringMVC框架中，DispatcherServlet处于核心位置，负责协调和组织不同组件以完成请求处理并返回响应的工作。
+
+1. 若一个请求匹配DispatcherServlet的请求映射路径，web容器将该请求转交给DispatcherServlet处理
+2. DispatcheServlet接收到请求后，将根据请求信息及HandlerMapping的配置找到处理请求的处理器（Handler）。
+3. DispatcherServlet根据HandlerMapping得到对应当前请求的Handler后，通过HandlerAdapter对Handler进行封装，再以同一的适配器接口调用Handler。
+4. 处理器完成业务逻辑的处理后将返回一个ModelAndView给DispatcherServlet，ModelAndView包含了视图逻辑名和模型数据信息。
+5. DispatcherServlet借助ViewResoler完成逻辑视图名到真实试图对象的解析
+6. 得到真实视图对象View后，DispatcherServlet使用这个View对ModelAndView中的模型数据进行视图渲染。
+
+参考 ：  
+[《springMVC运行流程分析》](https://blog.csdn.net/u013628152/article/details/51440271)
+
+**14. Spring MVC 启动流程**
+
+1. COntextLoaderListener初始化，实例化IoC容器，并将此容器实例注册到ServletContext中。
+2. DispatcheServlet初始化，建立自己的上下文，也注册到ServletContext中。DIspatchServlet会建立自己的上下文来持有SpringMVC特殊的Bean度夏凝，在建立这个自己持有的IoC容器的时候，会从ServletContext中得到根上下文作为DispatcherServlet上下文的parent上下文。有了这个根上下文再对自己持有的上下文进行初始化，之后把自己持有的这个上下文保存到ServletContext中，供以后检索和使用。
+
+参考：  
+[《Spring MVC的启动过程》](https://www.cnblogs.com/mingziday/p/4987058.html)  
+
+**15. Spring 的单例实现原理**
+
+Spring的单例模式既不是饿汉也不是懒汉，而是采用了第三种，单例注册表的方式来实现的。注册表的缓存是HashMap对象。
+
+Spring在需要获取一个bean实例时，首先去一个存储了beanName和实例映射关系的HashMap中以同步代码块方式获取此beanName对应的实例。  
+如果实例为null，则判断此bean是否被规定为单例模式，如果是，则在同步方法块中再次检测注册表中不存在此bean实例后，创建bean实例并像注册表注册，以后将可以通过注册表直接获取该单例。  
+如果bean规定为非单例，则每次都创建一个bean实例。
+
+参考：  
+[《Spring的单例实现原理》](https://blog.csdn.net/u011305680/article/details/79717238)
+
+**16. Spring 框架中用到了哪些设计模式**
+
+此题请参见basic/设计模式.md中的同名题目。
+
+**17. Spring 其他产品（Srping Boot、Spring Cloud、Spring Secuirity、Spring Data、Spring AMQP 等）**
+
+17.1 Spring Boot  
+Spring Boot是由Pivotal团队提供的框架，其设计目的是用来简化新Spring应用的初始搭建以及开发过程。该框架使用了特定的方式来进行配置，从而使开发人员不再需要定义样板化的配置。
+
+17.2 Spring Cloud  
+Spring Cloud是Pivotal提供的用于简化分布式系统构建的工具集。Spring Cloud引入了云平台连接器（Cloud Connector）和服务连接器（Service Connector）的概念。云平台连接器是一个接口，需要由云平台提供者进行实现，以便库中其他模块可以与该平台协同工作。
+
+17.3 Spring data  
+Spring Data是一个用于简化数据库访问，并支持云服务的开源框架。它的目标是让数据库的访问变得方便快捷，并支持map-reduce框架和云计算数据服务。此外，它还支持基于关系型数据库的数据服务，如Oracle RAC等。
+
+17.4 Spring Security  
+Spring Security基于Spring框架，提供了一套web应用安全性的完整解决方案。对于用户认证Authentication和用户授权Authorization两部分Spring Security都有很好的支持。
+
+17.5 Spring AMQP  
+SPring AMQP项目将Spring核心思想应用于基于AMQP的消息解决方案的开发上。它提供了template这个高度抽象来发送和接收信息。它同样提供了消息驱动的实体。这些实体存在于listener container容器中。
+
+参考：  
+[《说一说Spring家族》](https://www.jianshu.com/p/b3e4aaa83a7d)
+
+**18. 有没有用到Spring Boot，Spring Boot的认识、原理**
+
+SpringBoot可以帮助管理依赖和自动配置。它把一个个技术模块封装成一个个starter，当引入该模块依赖的时候就可以开箱即用。它能够做到开箱即用的原理其实是Spring 4.x提供的基于条件配置bean的能力。  
+@SpringBootApplication这个注解允许应用直接执行。它是一个组合注解，包含了@Configuration，@EnableAutoConfiguration，@ComponentScan三个注解。其中@EnableAutoConfiguration注解提供了核心的功能。它通过@Import注解导入配置。  
+EnableAutoConfigurationImportSelector使用SpringFactoriesLoader.loadFactoryNames方法来扫描具有META-INF/spring.factories文件的jar包。spring-boot-autoconfigure-x.x.x.x.jar中有spring.factories文件，文件中声明了有哪些要自动配置。
+
+参考：  
+SpringBoot是新技术，目前本人了解过少，单个资料很难解释该技术。在此给出社区连接，请自取所需。  
+[《Spring Boot 中文索引》](http://springboot.fun/)
+
+**19. MyBatis的原理**
