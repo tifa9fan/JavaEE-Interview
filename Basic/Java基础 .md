@@ -57,7 +57,7 @@ Exception和Error：
 >  大多数应用程序都不应该试图捕获它。
 >
 >在执行该方法期间，无需在其 throws 子句中声明可能抛出但是未能捕获的 Error 的任何子类，因为这些错误可能是再也不会发生的异常条件。
-> <p align="right">--《JDK API 1.6.0 中文版》</p>
+> <p align="right">--《JDK API 1.6.0 中文版></p>
 
 - Exception 类及其子类是 Throwable 的一种形式，它指出了合理的应用程序想要捕获的条件，是达成健壮性的手段。
 
