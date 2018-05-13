@@ -2,7 +2,7 @@
 
 ##### @Author LucI_PhAN
 
-## 数据存储和消息队列
+## 分布式
 
 ### Nginx
 
