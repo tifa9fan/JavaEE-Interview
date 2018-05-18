@@ -15,9 +15,9 @@ Collection是最基本的集合接口，声明了适用于Java集合（只包括
 1.1 列表List  
 List的特性是其元素以线性方式存储，集合中可以存放重复对象。  
 List接口主要实现类：
-- ArrayList:底层数据结构是数据。效率高，线程不安全。可以对元素进行随机的访问，查找快，增删慢。
+- ArrayList:底层数据结构是数据。效率高，线程不安全。可以对元素进行随机的访问，查找快，增删慢。默认初始容量为10.
 - Vector：底层数据结构是数组。效率低但线程安全。查找快，增删慢。
-- LinkedList：底层数据结构是链表。效率高，线程不安全。查找慢，增删快。
+- LinkedList：底层数据结构是链表。效率高，线程不安全。查找慢，增删快。linkedList 是一个双向链表，没有初始化大小，也没有扩容的机制。
 
 List保证插入顺序排序，集合内元素可以重复且可以根据索引直接操作元素。
 
@@ -276,3 +276,13 @@ put()方法的hash算法。
 
 参考：  
 [《Java集合源码剖析》](https://blog.csdn.net/column/details/collection.html)
+
+**15. Java Collections和Arrays的sort方法默认的排序方法是什么**
+
+Arrays.sort()方法如果数组长度大于等于286且连续性好的话，就用归并排序，如果大于等于286且连续性不好的话就用双轴快速排序。如果长度小于286且大于等于47的话就用双轴快速排序，如果长度小于47的话就用插入排序。
+
+在Java 6中Arrays.sort()和Collections.sort()使用的是MergeSort，而在Java 7中，内部实现换成了TimSort，其对对象间比较的实现要求更加严格。同时Collections.sort()也通过配置可以使用归并排序。
+
+参考：  
+[《Collections.sort()和Arrays.sort()排序算法选择》](https://blog.csdn.net/timheath/article/details/68930482)  
+[《DK7中的排序算法详解--Collections.sort和Arrays.sort 》](http://blog.sina.com.cn/s/blog_8e6f1b330101h7fa.html)
