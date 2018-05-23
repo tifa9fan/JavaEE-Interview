@@ -18,7 +18,7 @@ Service包含两部分：Connectior：用于处理连接相关的事情，并提
 请求流程：  
 1. 请求发送到Tomcat之后，首先经过Service然后教给Connector
 2. Connector接收请求并将接收的请求封装为Request和Response来具体处理，封装完成后再交由Container进行处理。
-3. Container处理完请求之后再返回给Connector，由COnnector通过Socket将处理的结果返回给客户端。
+3. Container处理完请求之后再返回给Connector，由Connector通过Socket将处理的结果返回给客户端。
 
 Connector使用ProtocolHandler来处理请求的，不同的ProtocolHandler代表不同的连接类型。它包含了三个组件：  
 --> Endpoint：用于处理底层Socket的网络连接，实现TCP/IP协议，它的抽象实现AbstractEndpoint里面定义了Acceptor和AsyncTimeout两个内部类和一个Handler接口。Acceptor用于监听请求，，AsyncTimeout用于检查异步Request的超时，Handler用于处理接收到的Socket，在内部调用Processor进行处理。  

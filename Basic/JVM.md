@@ -130,7 +130,7 @@ JVM要做垃圾回收时，首先要判断一个对象是否还有可能被使�
 **6. JVM如何设置参数**
 
 JVM的参数可以在如下位置设置：
-1. 继承开发环境（IDE）下启动并使用JVM，如eclipse需要修改根目录文件eclipse.ini;
+1. 集成开发环境（IDE）下启动并使用JVM，如eclipse需要修改根目录文件eclipse.ini;
 2. Windows服务器下安装版的Tomcat，可以使用tomcat目录下Tomcat7w.exe和直接修改注册表两种方式修改JVM参数；
 3. 解压版本的tomcat，通过startup.bat启动tomcat加载配置的，在tomcat的bin下catalina.bat文件内添加
 4. Linux服务器Tomcat设置JVM，需要修改TOMCAT_HOME/bin/catalina.sh
