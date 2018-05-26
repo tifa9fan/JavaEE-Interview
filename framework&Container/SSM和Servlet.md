@@ -6,7 +6,7 @@
 
 ### SSM/Servlet
 
-**1. Servlet的生命周期**
+**1. Servlet的生命周期** 
 
 Servlet的产生到消亡过程中，分为四个阶段，它们与三个生命周期函数有关：初始化方法init()，处理客户请求的方法service()，终止方法destroy()。
 
