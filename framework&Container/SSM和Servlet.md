@@ -6,7 +6,7 @@
 
 ### SSM/Servlet
 
-**1. Servlet的生命周期** 
+**1. Servlet的生命周期**
 
 Servlet的产生到消亡过程中，分为四个阶段，它们与三个生命周期函数有关：初始化方法init()，处理客户请求的方法service()，终止方法destroy()。
 
@@ -17,8 +17,8 @@ web容器负责加载Servlet。当web容器启动时或在第一次使用这个s
 当srevlet被实例化后，servlet容器将调用每个servlet的init()方法来实例化每个实例。执行完init()方法后，servlet处于“已初始化”状态。也就是说一旦servlet被实例化，那么必将调用init()方法。
 
 1.3 服务 （service()方法根据需求可能被执行多次）  
-当执行service()方法时，servlet必定被初始化过。每个队servlet的请求由一个ServletRequest对象代表。servlet给客户端的响应由一个ServletResponse对象代表。对于到达客户机的请求，服务器创建特定于请求的一个请求对象和一个响应对象。service方法可以调用其他方法来处理请求。  
-service()方法在服务器被访问时调用。servlet对象的生命周期中service方法可能被调用多次。由于web-server启动后，服务器中公开的部分自愿将处于网络中，当网络中不同客户端并发访问服务器中的统一资源，服务器将开设多个线程处理不同的请求。多线程同时处理同一对象时，可能会出现数据并发访问的错误。  
+当执行service()方法时，servlet必定被初始化过。每个对servlet的请求由一个ServletRequest对象代表。servlet给客户端的响应由一个ServletResponse对象代表。对于到达客户机的请求，服务器创建特定于请求的一个请求对象和一个响应对象。service方法可以调用其他方法来处理请求。  
+service()方法在服务器被访问时调用。servlet对象的生命周期中service方法可能被调用多次。由于web-server启动后，服务器中公开的部分资源将处于网络中，当网络中不同客户端并发访问服务器中的统一资源，服务器将开设多个线程处理不同的请求。多线程同时处理同一对象时，可能会出现数据并发访问的错误。  
 
 1.4 销毁 （destroy()方法执行且只执行一次）  
 当服务器不再需要servlet实例或重新装入时，会调用destory()方法。使用这个方法，servlet可以释放掉所有在init()方法申请的资源。一个servlet实例一旦终止，就不允许再次被调用，只能等待卸载。  
@@ -98,7 +98,7 @@ Spring框架中，一旦把一个Bean纳入Spring IOC容器之中，这个Bean�
 **5. Spring IOC 如何实现**
 
 控制反转IOC inversion of control是一种设计思想。依赖注入DI dependency injection是实现IOC的一种方法。  
-IOC是Spring的核心。所谓的控制反转，就是获得依赖对象的方式反转了。对于Spring来说，就是有Spring阿里负责空值对象的生命周期和对象间的关系。所有的类都在Spring容器中登记，告诉Spring自己是什么，自己需要什么。所有的类的创建，销毁都由Spring来控制。也就是说**控制对象生存周期的不再是引用它的对象，而是Spring**。对于某个具体的对象而言，以前是它控制其他对象，而现在是**所有对象都被Spring控制**，所以称为控制反转。
+IOC是Spring的核心。所谓的控制反转，就是获得依赖对象的方式反转了。对于Spring来说，就是有Spring来负责控制对象的生命周期和对象间的关系。所有的类都在Spring容器中登记，告诉Spring自己是什么，自己需要什么。所有的类的创建，销毁都由Spring来控制。也就是说**控制对象生存周期的不再是引用它的对象，而是Spring**。对于某个具体的对象而言，以前是它控制其他对象，而现在是**所有对象都被Spring控制**，所以称为控制反转。
 
 IOC的实现看起来高深莫测，实际上抽丝剥茧直达底层就会发现，其实IOC是建立在一些基础技术之上。IOC的实现建立在工厂模式，java反射机制和jdk的操作xml的DOM解析方式（当使用xml配置时）。甚至我们在某种程度上可以认为IOC就是一个存储了键值对的Map集合，里面存储的是beanId与实例的对应关系。  
 首先Spring通过解析xml配置或者通过反射获取annotation注解来确立beanId与其对应的类的映射关系，然后通过工厂模式创建对应的实例。之后利用反射机制实行依赖注入。这就是IOC的灵魂。
@@ -121,14 +121,14 @@ Spring最初只有这个作用域。整个应用中只会创建一个实例，�
 4. 请求Request  
 为每个请求创建一个实例
 5. globalSession  
-作用和session雷士，只是使用portlet的时候使用。
+作用和session类似，只是使用portlet的时候使用。
 
 参考：  
 [《spring bean的四种常用作用域的测试》](http://gaddma.iteye.com/blog/2037038)
 
 **7. 说说 Spring AOP、Spring AOP 实现原理**
 
-AOP面向切面编程 Aspect Oriented Programming是通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是OOP的延续，是软件开发中的一个热点，也是Spring框架中的一个重要内容，是函数式编程的一种衍生泛型。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提供程序的可用性，同时提高了开发的效率。  
+AOP面向切面编程 Aspect Oriented Programming 是通过预编译方式和运行期动态代理实现程序功能的统一维护的一种技术。AOP是OOP的延续，是软件开发中的一个热点，也是Spring框架中的一个重要内容，是函数式编程的一种衍生泛型。利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低，提供程序的可用性，同时提高了开发的效率。  
 OOP引入了封装，继承和多态性等概念来建立一种对象层次结构，用以模拟公共行为的一个集合。当需要为分散的对象引入公共行为的时候，OOP则显得无力。OOP允许定义从上到下的关系，但不并适合定义从左到右的关系。部分例如日志功能的代码往往水平范散在所有对象层次中，而与它所散布到的对象的核心功能毫无关系。这种散布在各处的无关代码被称为横切（cross-cutting）代码。在OOP设计中，它导致了大量代码的重复，不利于各个模块的重用。而且我们无法通过抽象父类的方式消除重复性横切代码，因为这些横切逻辑依附在业务类方法的流程中，他们不能转移到其他地方去。  
 对此，出现了AOP技术来解决难题。AOP利用一种称为横切的技术，解剖开封装的对象内部，并将那些影响了多个类的公共行为封装到一个可重用模块，并将其命名为切面 Aspect。AOP将那些与业务无关，却为业务模块所共同调用的逻辑或责任封装起来，便于减少系统的重复代码，降低模块间的耦合度，并利于未来的可操作性和可维护性。AOP的核心思想就是讲应用程序中的商业逻辑同对其提供支持的通用服务进行分离。  
 
@@ -159,13 +159,13 @@ Spring事务的事务实现分为两类四种：
 2.2 基于AspectJ的XML方式，不需要改动类，在XML文件中配置好即可  
 2.3 基于注解的方式，配置简单，只需要在业务层类中添加注解。
 
-Spring在TransactionDefinition接口中规定了七种类型的事务传播行为。它们规定了事务方法和事务方法发生嵌套调用时事务如何进行传播。它用于协调已经有事务标识大的方法之间发生调用时的事务上下文的规制（是否要有队里的事隔离级别和锁）
+Spring在TransactionDefinition接口中规定了七种类型的事务传播行为。它们规定了事务方法和事务方法发生嵌套调用时事务如何进行传播。它用于协调已经有事务标识的方法之间发生调用时的事务上下文的规制（是否要有独立的事隔离级别和锁）
 1. PROPAGATION_REQUIRED  
 如果没有当前事务，就新建一个事务。如果已经存在一个事务中，加入到这个事务中。这是最常见的选择。
 2. PROPAGATION_SUPPORTS  
 支持当前事务，如果当前没有事务，就以非事务方式执行。
 3. PROPAGATION_MANDATORY  
-使用当前的事务，如果当前没有事务，就抛出异常。当业务方法被设置为PROPAGATION_MANDATORY时，它不能被非事务的业务方法调用。所以PROPAGATION_MANDATORY的放水阀一般都是被其他业务方法简洁点用的。
+使用当前的事务，如果当前没有事务，就抛出异常。当业务方法被设置为PROPAGATION_MANDATORY时，它不能被非事务的业务方法调用。所以PROPAGATION_MANDATORY的方法一般都是被其他业务方法间接调用的。
 4. PROPAGATION_REQUIRES_NEW  
 新建事务，这是一个新的，与外层事务无关的内部事务，该事务拥有自己的独立隔离级别和锁，不依赖于外部事物，独立提交和回滚。如果当前存在事务，就把当前事务挂起。内部事务结束时，外部事务才继续执行。
 5. PROPAGATION_NOT_SUPPORTED  
@@ -203,7 +203,7 @@ CallbackPreferringPlatformTransactionManager接口扩展自PlatformTransactionMa
 
 事务失效的具体情境请操作参考资料。  
 
-JDK动态代理中，只有代理对象proxy直接调用的方法才真正走的是代理。而如果这个方法内部调用了其他方法，调用的其他方法无论潜逃了多少层都是不会走代理的。  
+JDK动态代理中，只有代理对象proxy直接调用的方法才真正走的是代理。而如果这个方法内部调用了其他方法，调用的其他方法无论嵌套了多少层都是不会走代理的。  
 如果没有注意到这个特点，在spring的事务嵌套中，如果传播方式为PROPAGATION_REQUIRES_NEW，而子事务抛出异常，父事务未捕获则两个都会失败，如果捕获则两个一起成功，这就与逻辑不符了。
 
 解决方法：  
@@ -284,8 +284,7 @@ SpringBoot可以帮助管理依赖和自动配置。它把一个个技术模块�
 @SpringBootApplication这个注解允许应用直接执行。它是一个组合注解，包含了@Configuration，@EnableAutoConfiguration，@ComponentScan三个注解。其中@EnableAutoConfiguration注解提供了核心的功能。它通过@Import注解导入配置。  
 EnableAutoConfigurationImportSelector使用SpringFactoriesLoader.loadFactoryNames方法来扫描具有META-INF/spring.factories文件的jar包。spring-boot-autoconfigure-x.x.x.x.jar中有spring.factories文件，文件中声明了有哪些要自动配置。
 
-参考：  
-SpringBoot是新技术，目前本人了解过少，单个资料很难解释该技术。在此给出社区连接，请自取所需。  
+参考：    
 [《Spring Boot 中文索引》](http://springboot.fun/)
 
 **19. MyBatis的原理**
