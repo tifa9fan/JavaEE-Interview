@@ -160,5 +160,5 @@ TCP连接是全双工的，因此每个方向都必须单独进行关闭。这�
 
 参考：  
 [《从输入URL到页面加载发生了什么》](https://mp.weixin.qq.com/s?__biz=MzI1NDQ3MjQxNA==&mid=2247483724&idx=1&sn=e58dd30d124971c795584e8673d6cc71&chksm=e9c5f8fddeb271ebebbb6c350ed1abc252f1f26b4f35c4ce36e10bde9659a37520feabed2290&scene=21#wechat_redirect)
-[《从输入URL到页面加载发生了什么》](https://www.jianshu.com/p/cb43e1406d83)
+[《DNS同时使用TCP和UDP协议》](https://www.jianshu.com/p/cb43e1406d83)
 
